@@ -6,7 +6,11 @@
 //
 
 import Foundation
-
-let graph = try Graph.parse()
-
+let graph: Graph
+do {
+  graph = try Graph.parse()
+} catch {
+  print(Graph.message(for: error))
+  exit(1)
+}
 try gen(roots: graph.nodes, files: graph.files)
