@@ -1,11 +1,18 @@
+import ArgumentParser
 @testable import Graph
 import XCTest
 
 final class GraphTests: XCTestCase {
-  func parse(_ arguments: [String]? = nil) throws -> TestGraph {
-    try TestGraph(graph: Graph.parse(arguments))
+  func parse(_ arguments: [String]? = nil, file: StaticString = #filePath, line: UInt = #line) throws -> TestGraph {
+    do {
+      return try TestGraph(graph: Graph.parseAsRoot(arguments) as! Graph)
+    } catch {
+      throw NSError(domain: Graph.message(for: error), code: 0)
+    }
   }
-
+  func testVersion() throws {
+    AssertErrorMessage(Graph.self, ["--version"], "1.0.0")
+  }
   func testFiles() throws {
     let parsed = try parse(["a", "b", "--output", "c"])
     XCTAssertEqual(parsed, .fixture())
@@ -62,5 +69,15 @@ struct TestGraph: Equatable {
     title: String? = nil
   ) -> Self {
     .init(files: files, nodes: nodes, output: output, title: title)
+  }
+}
+
+func AssertErrorMessage<A>(_ type: A.Type, _ arguments: [String], _ errorMessage: String, file: StaticString = #file, line: UInt = #line) where A: ParsableArguments {
+  do {
+    _ = try A.parse(arguments)
+    XCTFail("Parsing should have failed.", file: file, line: line)
+  } catch {
+    // We expect to hit this path, i.e. getting an error:
+    XCTAssertEqual(A.message(for: error), errorMessage, file: file, line: line)
   }
 }

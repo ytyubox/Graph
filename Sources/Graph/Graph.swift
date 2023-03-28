@@ -1,7 +1,9 @@
 import ArgumentParser
 
 struct Graph: ParsableCommand {
-  internal init(
+  static var configuration = CommandConfiguration(version: "1.0.0")
+
+  init(
     files: [String],
     title: String?,
     nodes: [String],
